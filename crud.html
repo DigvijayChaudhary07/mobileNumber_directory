@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f7f7;
+            padding: 40px;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        input[type="text"], input[type="number"] {
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: #fff;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        button.delete {
+            background: #dc3545;
+        }
+        button.update {
+            background: #28a745;
+        }
+        button:disabled {
+            background: #aaa;
+            cursor: not-allowed;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background: #007bff;
+            color: #fff;
+        }
+        tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-group">
+        <input type="text" id="fName" placeholder="First Name">
+        <input type="text" id="lName" placeholder="Last Name">
+        <input type="number" id="mobile" placeholder="Mobile Number">
+        <button id="submitBtn" type="submit" onclick="saveInformation()">Submit</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Mobile</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="display"></tbody>
+    </table>
+    <script>
+        let editIndex = null;
+
+        function saveInformation() {
+            let data = JSON.parse(localStorage.getItem("userInfo")) || [];
+            let obj = {
+                firstName: document.getElementById("fName").value.trim(),
+                lastName: document.getElementById("lName").value.trim(),
+                mobile: document.getElementById("mobile").value.trim()
+            };
+            if (!obj.firstName || !obj.lastName || !obj.mobile) {
+                alert("Please fill all fields.");
+                return;
+            }
+            if (editIndex === null) {
+                data.push(obj);
+            } else {
+                data[editIndex] = obj;
+                editIndex = null;
+                document.getElementById("submitBtn").textContent = "Submit";
+            }
+            localStorage.setItem("userInfo", JSON.stringify(data));
+            displayInformation();
+            document.getElementById("fName").value = "";
+            document.getElementById("lName").value = "";
+            document.getElementById("mobile").value = "";
+        }
+
+        function displayInformation() {
+            let data = JSON.parse(localStorage.getItem("userInfo")) || [];
+            let op = data.map((v, i) => {
+                return `<tr>
+                    <td>${v.firstName}</td>
+                    <td>${v.lastName}</td>
+                    <td>${v.mobile}</td>
+                    <td>
+                        <button class="update" onclick="editInformation(${i})">Update</button>
+                        <button class="delete" onclick="deleteInformation(${i})">Delete</button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById("display").innerHTML = op.join("");
+        }
+
+        function deleteInformation(index) {
+            let data = JSON.parse(localStorage.getItem("userInfo")) || [];
+            data.splice(index, 1);
+            localStorage.setItem("userInfo", JSON.stringify(data));
+            displayInformation();
+            // Reset form if deleting the row being edited
+            if (editIndex === index) {
+                editIndex = null;
+                document.getElementById("fName").value = "";
+                document.getElementById("lName").value = "";
+                document.getElementById("mobile").value = "";
+                document.getElementById("submitBtn").textContent = "Submit";
+            }
+        }
+
+        function editInformation(index) {
+            let data = JSON.parse(localStorage.getItem("userInfo")) || [];
+            document.getElementById("fName").value = data[index].firstName;
+            document.getElementById("lName").value = data[index].lastName;
+            document.getElementById("mobile").value = data[index].mobile;
+            editIndex = index;
+            document.getElementById("submitBtn").textContent = "Update";
+        }
+
+        // Initial display on page load
+        displayInformation();
+    </script>
+</body>
+</html>
